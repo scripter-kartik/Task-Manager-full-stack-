@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { connect } from "mongoose";
 import { connectDB } from "./config/db.js";
+import userRouter from "./routes/userRoute.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -16,6 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 // ROUTES
+app.use("/api/user", userRouter);
+
 app.get("/", (req, res) => {
   res.send("API WORKING");
 });
