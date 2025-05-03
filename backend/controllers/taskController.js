@@ -44,4 +44,78 @@ export const getTasks = async (req, res) => {
   }
 };
 
-// GET A SINGLE TASK 
+// GET A SINGLE TASK BY ID (MUST BELONG TO LOGGED IN USER)
+export const getTaskById = async (req, res) => {
+  try {
+    const task = await Task.findOne({ _id: req.params.id, owner: req.user.id });
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// UPDATE A TASK BY ID (MUST BELONG TO LOGGED IN USER)
+export const updateTask = async (req, res) => {
+  try {
+    const data = { ...req.body };
+    if (data.completed !== undefined) {
+      data.completed = data.completed === "Yes" || data.completed === "true";
+    }
+
+    const updated = await Task.findOneAndUpdate(
+      { _id: req.params.id, owner: req.user.id },
+      data,
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found or not yours",
+      });
+    }
+    res.json({
+      success: true,
+      message: "Task updated successfully",
+      task: updated,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// DELETE A TASK BY ID (MUST BELONG TO LOGGED IN USER)
+export const deleteTask = async (req, res) => {
+  try {
+    const deleted = await Task.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.user.id,
+    });
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found or not yours",
+      });
+    }
+    res.json({
+      success: true,
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
